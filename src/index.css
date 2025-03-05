@@ -1,0 +1,34 @@
+/* index.css */
+
+/* Import Tailwind’s base styles, components, and utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom global styles */
+
+body {
+  /* Use a light background and default text color */
+  @apply bg-gray-50 text-gray-900;
+}
+
+.container {
+  /* You already use container classes, just to ensure consistency */
+  @apply mx-auto p-4;
+}
+
+/* Style all form elements uniformly */
+input,
+textarea,
+select {
+  @apply w-full p-2 border border-gray-300 rounded;
+}
+
+/* Button styling with hover state */
+button {
+  @apply rounded px-4 py-2 font-medium;
+}
+
+button:hover {
+  @apply bg-blue-600;
+}
