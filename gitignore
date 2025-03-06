@@ -1,0 +1,28 @@
+# Node modules
+/node_modules/
+
+# Répertoires de build
+/dist/
+/build/
+
+# Fichiers cache de Vite
+/.vite/
+
+# Fichiers d'environnement sensibles
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers de logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers spécifiques au système d'exploitation
+.DS_Store
+Thumbs.db
+
+# Fichiers de build TypeScript
+*.tsbuildinfo

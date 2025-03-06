@@ -73,172 +73,59 @@ interface Email {
 
 function App() {
 
-// --- New authentication state added at the top ---
-const [isAuthenticated, setIsAuthenticated] = useState(false);
-const [passwordInput, setPasswordInput] = useState("");
 
-// --- New function to handle the authentication submission ---
-const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  // Adjust the environment variable name as necessary.
-  const expectedPassword = process.env.REACT_APP_PASSWORD_KEY;
-  if (passwordInput === expectedPassword) {
-    setIsAuthenticated(true);
-  } else {
-    alert("Incorrect password. Please try again.");
-  }
-};  
-// Add a new activeTab state option
-  const [activeTab, setActiveTab] = useState<
-    'entreprises' | 'prospects' | 'historique_appels' | 'historique_meetings' | 'taches' | 'emails' | 'smart_query'
-  >('entreprises');
-
-  const [smartQueryInput, setSmartQueryInput] = useState("");
-  const [smartQueryResult, setSmartQueryResult] = useState<{
-    sql: string;
-    validation: [boolean, string];
-    queryResults: any;
-    summary: string;
-  } | null>(null);
-  const [loadingSmartQuery, setLoadingSmartQuery] = useState(false);
-  //const handleRunSmartQuery = async () => { /* ... */ };
-
-  // State for "entreprises" table
-  const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
-  const [formEntreprises, setFormEntreprises] = useState({
-    nom_entreprise: '',
-    secteur_activite: '',
-    taille_entreprise: '',
-    adresse: '',
-    site_web: '',
-    strategie_entreprise: '',
-    notes: '',
-  });
-  const [editingEntreprises, setEditingEntreprises] = useState<string | null>(null);
-
-  // State for "prospects" table
-  const [prospects, setProspects] = useState<Prospect[]>([]);
-  const [formProspects, setFormProspects] = useState({
-    nom: '',
-    prenom: '',
-    email: '',
-    nom_entreprise: '',
-    telephone: '',
-    fonction: '',
-    notes: '',
-  });
-  const [editingProspects, setEditingProspects] = useState<string | null>(null);
-
-  const [emails, setEmails] = useState<Email[]>([]);
-  const [formEmails, setFormEmails] = useState({
-    nom_prospect: '',
-    date_email: '',
-    expediteur: '',
-    destinataire: '',
-    sujet: '',
-    corps: '',
-  });
-  const [editingEmails, setEditingEmails] = useState<string | null>(null);
-
-
-  // Generic data fetching function
-  const fetchData = async (table: string, setRecords: (records: any[]) => void) => {
-    let orderField = 'date_creation';
-    if (table === 'historique_appels') {
-      orderField = 'date_appel';
-    }
-    if (table === 'historique_meetings') {
-      orderField = 'date_meeting';
-    }
-    if (table === 'historique_emails') {
-      orderField = 'date_email';
-    }
-    if (table === 'historique_appels' || table === 'historique_meetings' ||
-      table === 'historique_emails') {
-      // For both historique_appels and historique_meetings, join with prospects to get nom_prospect for display
-      const { data, error } = await supabase
-        .from(table)
-        .select(`
-          *,
-          prospects:prospect_id (nom)
-        `)
-        .order(orderField, { ascending: false });
-      
-      if (error) {
-        console.error(`Error fetching ${table}:`, error);
-      } else {
-        // Transform data to include prospect_nom for easier display
-        const enhancedData = data.map((record: any) => ({
-          ...record,
-          prospect_nom: record.prospects ? record.prospects.nom : 'Unknown',
-        }));
-        setRecords(enhancedData);
-      }
-    } else {
-      // Normal fetch for other tables
-      const { data, error } = await supabase
-        .from(table)
-        .select('*')
-        .order(orderField, { ascending: false });
-      if (error) console.error(`Error fetching ${table}:`, error);
-      else setRecords(data);
-    }
-  };
-
-  // State for "historique_appels" table
-  const [historiqueAppels, setHistoriqueAppels] = useState<HistoriqueAppel[]>([]);
-  const [formHistoriqueAppels, setFormHistoriqueAppels] = useState({
-    nom_prospect: '',
-    date_appel: '',
-    notes: '',
-  });
-  const [editingHistoriqueAppels, setEditingHistoriqueAppels] = useState<string | null>(null);
-
-  // State for "historique_meetings" table
-  const [historiqueMeetings, setHistoriqueMeetings] = useState<HistoriqueMeeting[]>([]);
-  const [formHistoriqueMeetings, setFormHistoriqueMeetings] = useState({
-    nom_prospect: '',
-    date_meeting: '',
-    participants: '',
-    notes: '',
-  });
-  const [editingHistoriqueMeetings, setEditingHistoriqueMeetings] = useState<string | null>(null);
-
-  // State for "taches" table
-  const [taches, setTaches] = useState<Tache[]>([]);
-  const [formTaches, setFormTaches] = useState({
-    prospect_id: '',
-    libelle: '',
-    status: '',
-    date_objectif: '',
-    notes: '',
-  });
-  const [editingTaches, setEditingTaches] = useState<string | null>(null);
-
-  const handleRunSmartQuery = async () => {
-    if (!smartQueryInput.trim()) {
-      alert("Please enter a query.");
-      return;
-    }
-    setLoadingSmartQuery(true);
+  // Authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
   
-    try {
-      // Call your smart query service function. This function 
-      // should perform the chain: generateSQL → validateSQLInSupabase → executeQuery → generateSummary.
-      const result = await runSmartQuery(smartQueryInput);
-      // Expected result: { sql, validation: [isValid, validationMsg], queryResults, summary }
-      setSmartQueryResult(result);
-    } catch (err: any) {
-      console.error("Error executing smart query:", err);
-      alert("Error executing smart query: " + err.message);
-    } finally {
-      setLoadingSmartQuery(false);
-    }
-  };
+  // Move ALL these state declarations up here
+  // All state declarations
+  const [activeTab, setActiveTab] = useState<'entreprises' | 'prospects' | 'historique_appels' | 'historique_meetings' | 'taches' | 'emails' | 'smart_query'>('entreprises');
+  const [smartQueryInput, setSmartQueryInput] = useState("");
+  const [smartQueryResult, setSmartQueryResult] = useState<{sql: string; validation: [boolean, string]; queryResults: any; summary: string} | null>(null);
+  const [loadingSmartQuery, setLoadingSmartQuery] = useState(false);
+  const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
+// State for "entreprises" table
 
+const [formEntreprises, setFormEntreprises] = useState({
+  nom_entreprise: '',
+  secteur_activite: '',
+  taille_entreprise: '',
+  adresse: '',
+  site_web: '',
+  strategie_entreprise: '',
+  notes: '',
+});
+const [editingEntreprises, setEditingEntreprises] = useState<string | null>(null);
 
-  // Fetch data when active tab changes
-  useEffect(() => {
+// State for "prospects" table
+const [prospects, setProspects] = useState<Prospect[]>([]);
+const [formProspects, setFormProspects] = useState({
+  nom: '',
+  prenom: '',
+  email: '',
+  nom_entreprise: '',
+  telephone: '',
+  fonction: '',
+  notes: '',
+});
+const [editingProspects, setEditingProspects] = useState<string | null>(null);
+
+const [emails, setEmails] = useState<Email[]>([]);
+const [formEmails, setFormEmails] = useState({
+  nom_prospect: '',
+  date_email: '',
+  expediteur: '',
+  destinataire: '',
+  sujet: '',
+  corps: '',
+});
+const [editingEmails, setEditingEmails] = useState<string | null>(null);
+
+// Move this useEffect up here, before any conditional returns
+useEffect(() => {
+  // Only fetch data if authenticated
+  if (isAuthenticated) {
     if (activeTab === 'entreprises') {
       fetchData('entreprises', setEntreprises);
     } else if (activeTab === 'prospects') {
@@ -252,7 +139,148 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     } else if (activeTab === 'emails') {
       fetchData('historique_emails', setEmails);
     }
-  }, [activeTab]);
+  }
+}, [activeTab, isAuthenticated]); // Add isAuthenticated to dependency array
+
+
+
+
+// Generic data fetching function
+const fetchData = async (table: string, setRecords: (records: any[]) => void) => {
+  let orderField = 'date_creation';
+  if (table === 'historique_appels') {
+    orderField = 'date_appel';
+  }
+  if (table === 'historique_meetings') {
+    orderField = 'date_meeting';
+  }
+  if (table === 'historique_emails') {
+    orderField = 'date_email';
+  }
+  if (table === 'historique_appels' || table === 'historique_meetings' ||
+    table === 'historique_emails') {
+    // For both historique_appels and historique_meetings, join with prospects to get nom_prospect for display
+    const { data, error } = await supabase
+      .from(table)
+      .select(`
+        *,
+        prospects:prospect_id (nom)
+      `)
+      .order(orderField, { ascending: false });
+    
+    if (error) {
+      console.error(`Error fetching ${table}:`, error);
+    } else {
+      // Transform data to include prospect_nom for easier display
+      const enhancedData = data.map((record: any) => ({
+        ...record,
+        prospect_nom: record.prospects ? record.prospects.nom : 'Unknown',
+      }));
+      setRecords(enhancedData);
+    }
+  } else {
+    // Normal fetch for other tables
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .order(orderField, { ascending: false });
+    if (error) console.error(`Error fetching ${table}:`, error);
+    else setRecords(data);
+  }
+};
+
+// State for "historique_appels" table
+const [historiqueAppels, setHistoriqueAppels] = useState<HistoriqueAppel[]>([]);
+const [formHistoriqueAppels, setFormHistoriqueAppels] = useState({
+  nom_prospect: '',
+  date_appel: '',
+  notes: '',
+});
+const [editingHistoriqueAppels, setEditingHistoriqueAppels] = useState<string | null>(null);
+
+// State for "historique_meetings" table
+const [historiqueMeetings, setHistoriqueMeetings] = useState<HistoriqueMeeting[]>([]);
+const [formHistoriqueMeetings, setFormHistoriqueMeetings] = useState({
+  nom_prospect: '',
+  date_meeting: '',
+  participants: '',
+  notes: '',
+});
+const [editingHistoriqueMeetings, setEditingHistoriqueMeetings] = useState<string | null>(null);
+
+// State for "taches" table
+const [taches, setTaches] = useState<Tache[]>([]);
+const [formTaches, setFormTaches] = useState({
+  prospect_id: '',
+  libelle: '',
+  status: '',
+  date_objectif: '',
+  notes: '',
+});
+const [editingTaches, setEditingTaches] = useState<string | null>(null);
+
+const handleRunSmartQuery = async () => {
+  if (!smartQueryInput.trim()) {
+    alert("Please enter a query.");
+    return;
+  }
+  setLoadingSmartQuery(true);
+
+  try {
+    // Call your smart query service function. This function 
+    // should perform the chain: generateSQL → validateSQLInSupabase → executeQuery → generateSummary.
+    const result = await runSmartQuery(smartQueryInput);
+    // Expected result: { sql, validation: [isValid, validationMsg], queryResults, summary }
+    setSmartQueryResult(result);
+  } catch (err: any) {
+    console.error("Error executing smart query:", err);
+    alert("Error executing smart query: " + err.message);
+  } finally {
+    setLoadingSmartQuery(false);
+  }
+};
+
+
+// Authentication handler
+const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  //console.log("Expected Password:", import.meta.env.VITE_PASSWORD_KEY);
+  const expectedPassword = import.meta.env.VITE_PASSWORD_KEY;
+  if (passwordInput === expectedPassword) {
+    setIsAuthenticated(true);
+  } else {
+    alert("Incorrect password. Please try again.");
+  }
+};
+ 
+  
+
+  
+    // --- Conditional rendering of the authentication form ---
+    if (!isAuthenticated) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+          <h1 className="text-3xl font-bold mb-4">Access Restricted</h1>
+          <form onSubmit={handleAuthSubmit} className="flex flex-col space-y-4">
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              className="p-3 border border-gray-300 rounded-md"
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+
 
   // Generic handleSubmit function for both tables
   const handleSubmitGeneric = async (
@@ -369,31 +397,6 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (error) alert(`Deletion error in ${table}: ${error.message}`);
     else refreshData();
   };
-
-// --- Conditionally render the password prompt when not authenticated ---
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-bold mb-4">Access Restricted</h1>
-        <form onSubmit={handleAuthSubmit} className="flex flex-col space-y-4">
-          <input
-            type="password"
-            placeholder="Enter password"
-            value={passwordInput}
-            onChange={(e) => setPasswordInput(e.target.value)}
-            className="p-3 border border-gray-300 rounded-md"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md"
-          >
-            Submit
-          </button>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="flex space-x-4 mb-6">
@@ -1357,7 +1360,11 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           </div>
         </div>
       )}
-    </div>
+ 
+
+
+  
+  </div>
   );
 }
 
