@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabaseClient';
 import './App.css';
 import { runSmartQuery } from './services/smartQueryService';
+import ReactMde from 'react-mde';
+import * as Showdown from 'showdown';
+import 'react-mde/lib/styles/css/react-mde-all.css';
 
+const converter = new Showdown.Converter({
+  tables: true,
+  simplifiedAutoLink: true,
+});
 interface Entreprise {
   entreprise_id: number;
   nom_entreprise: string;
@@ -73,7 +80,12 @@ interface Email {
 
 function App() {
 
-
+  const [selectedTabTaches, setSelectedTabTaches] = useState<"write" | "preview">("write");
+  const [selectedTabEnterprise, setSelectedTabEnterprise] = useState<"write" | "preview">("write");
+  const [selectedTabEmail, setSelectedTabEmail] = useState<("write")| "preview">("write");
+  const [selectedTabProspects, setSelectedTabProspects] = useState<"write" | "preview">("write");
+  const [selectedTabHistoriqueAppels, setSelectedTabHistoriqueAppels] = useState<"write" | "preview">("write");
+  const [selectedTabHistoriqueMeetings, setSelectedTabHistoriqueMeetings] = useState<"write" | "preview">("write");
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
@@ -464,6 +476,96 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       {activeTab === 'smart_query' && (
         <div>
           <h1 className="text-3xl font-bold mb-6">Smart Query</h1>
+
+          {/* Database Schema in 3 Columns */}
+          <div className="bg-gray-100 p-4 rounded-md mb-4">
+            <h2 className="text-xl font-bold mb-4">Database Schema</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <h3 className="font-semibold mb-2">historique_appels</h3>
+                <ul className="text-sm">
+                  <li>appel_id (int4)</li>
+                  <li>prospect_id (int4)</li>
+                  <li>date_appel (timestamp)</li>
+                  <li>notes (text)</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">historique_emails</h3>
+                <ul className="text-sm">
+                  <li>email_id (int4)</li>
+                  <li>prospect_id (int4)</li>
+                  <li>date_email (timestamp)</li>
+                  <li>expediteur (text)</li>
+                  <li>destinataire (text)</li>
+                  <li>sujet (text)</li>
+                  <li>corps (text)</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">historique_meetings</h3>
+                <ul className="text-sm">
+                  <li>meeting_id (int4)</li>
+                  <li>prospect_id (int4)</li>
+                  <li>date_meeting (timestamp)</li>
+                  <li>participants (text)</li>
+                  <li>notes (text)</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">taches</h3>
+                <ul className="text-sm">
+                  <li>tache_id (int4)</li>
+                  <li>prospect_id (int4)</li>
+                  <li>libelle (text)</li>
+                  <li>status (text)</li>
+                  <li>date_objectif (date)</li>
+                  <li>date_creation (timestamp)</li>
+                  <li>date_mise_a_jour (timestamp)</li>
+                  <li>notes (text)</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">categories</h3>
+                <ul className="text-sm">
+                  <li>id (int4)</li>
+                  <li>name (text)</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">prospects</h3>
+                <ul className="text-sm">
+                  <li>prospect_id (int4)</li>
+                  <li>nom (text)</li>
+                  <li>prenom (text)</li>
+                  <li>entreprise_id (int4)</li>
+                  <li>email (text)</li>
+                  <li>telephone (text)</li>
+                  <li>fonction (text)</li>
+                  <li>notes (text)</li>
+                  <li>date_creation (timestamp)</li>
+                  <li>date_mise_a_jour (timestamp)</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">entreprises</h3>
+                <ul className="text-sm">
+                  <li>entreprise_id (int4)</li>
+                  <li>nom_entreprise (text)</li>
+                  <li>secteur_activite (text)</li>
+                  <li>taille_entreprise (text)</li>
+                  <li>adresse (text)</li>
+                  <li>site_web (text)</li>
+                  <li>strategie_entreprise (text)</li>
+                  <li>notes (text)</li>
+                  <li>date_creation (timestamp)</li>
+                  <li>date_mise_a_jour (timestamp)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          {/* End Database Schema */}
+
           <div className="mb-4">
             <input
               type="text"
@@ -482,12 +584,20 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           </button>
           {smartQueryResult && (
             <div className="mt-6">
-              <p><strong>Generated SQL:</strong> {smartQueryResult.sql}</p>
+              <p>
+                <strong>Generated SQL:</strong> {smartQueryResult.sql}
+              </p>
               <p>
                 <strong>Validation:</strong> {smartQueryResult.validation[0] ? "SQL is valid" : `Error: ${smartQueryResult.validation[1]}`}
               </p>
-              <p><strong>Query Results:</strong> {JSON.stringify(smartQueryResult.queryResults)}</p>
-              {smartQueryResult.summary && (<p><strong>Summary:</strong> {smartQueryResult.summary}</p>)}
+              <p>
+                <strong>Query Results:</strong> {JSON.stringify(smartQueryResult.queryResults)}
+              </p>
+              {smartQueryResult.summary && (
+                <p>
+                  <strong>Summary:</strong> {smartQueryResult.summary}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -577,14 +687,19 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                   onChange={(e) => setFormEntreprises({ ...formEntreprises, strategie_entreprise: e.target.value })}
                 />
               </div>
+            
               <div className="w-full">
-                <textarea
-                  placeholder="Notes (optional)"
-                  className="p-3 border border-gray-300 rounded-md w-full h-32"
-                  value={formEntreprises.notes}
-                  onChange={(e) => setFormEntreprises({ ...formEntreprises, notes: e.target.value })}
-                />
+                <ReactMde
+    value={formEntreprises.notes}
+    onChange={(value) => setFormEntreprises({ ...formEntreprises, notes: value })}
+    selectedTab={selectedTabEnterprise}
+    onTabChange={setSelectedTabEnterprise}
+    generateMarkdownPreview={(markdown) =>
+      Promise.resolve(converter.makeHtml(markdown))
+    }
+/>
               </div>
+            
             </div>
             <div className="text-left">
               <button
@@ -735,12 +850,15 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                 />
               </div>
               <div className="w-full">
-                <textarea
-                  placeholder="Notes (optional)"
-                  className="p-3 border border-gray-300 rounded-md w-full h-32"
-                  value={formProspects.notes}
-                  onChange={(e) => setFormProspects({ ...formProspects, notes: e.target.value })}
-                />
+              <ReactMde
+                value={formProspects.notes}
+                onChange={(value) => setFormProspects({ ...formProspects, notes: value })}
+                selectedTab={selectedTabProspects}
+                onTabChange={setSelectedTabProspects}
+                generateMarkdownPreview={(markdown) =>
+                  Promise.resolve(converter.makeHtml(markdown))
+                }
+              />
               </div>
             </div>
             <div className="text-left">
@@ -872,11 +990,14 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                 onChange={(e) => setFormHistoriqueAppels({ ...formHistoriqueAppels, date_appel: e.target.value })}
                 required
               />
-              <textarea
-                placeholder="Notes (optional)"
-                className="p-3 border border-gray-300 rounded-md h-32"
+              <ReactMde
                 value={formHistoriqueAppels.notes}
-                onChange={(e) => setFormHistoriqueAppels({ ...formHistoriqueAppels, notes: e.target.value })}
+                onChange={(value) => setFormHistoriqueAppels({ ...formHistoriqueAppels, notes: value })}
+                selectedTab={selectedTabHistoriqueAppels}
+                onTabChange={setSelectedTabHistoriqueAppels}
+                generateMarkdownPreview={(markdown) =>
+                  Promise.resolve(converter.makeHtml(markdown))
+                }
               />
             </div>
             <button
@@ -988,11 +1109,14 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                 }
                 required
               />
-              <textarea
-                placeholder="Notes (optional)"
-                className="p-3 border border-gray-300 rounded-md h-32"
+              <ReactMde
                 value={formHistoriqueMeetings.notes}
-                onChange={(e) => setFormHistoriqueMeetings({ ...formHistoriqueMeetings, notes: e.target.value })}
+                onChange={(value) => setFormHistoriqueMeetings({ ...formHistoriqueMeetings, notes: value })}
+                selectedTab={selectedTabHistoriqueMeetings}
+                onTabChange={setSelectedTabHistoriqueMeetings}
+                generateMarkdownPreview={(markdown) =>
+                  Promise.resolve(converter.makeHtml(markdown))
+                }
               />
             </div>
             <button
@@ -1134,14 +1258,15 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
             setFormEmails({ ...formEmails, sujet: e.target.value })
           }
         />
-        <textarea
-          placeholder="Corps"
-          className="p-3 border border-gray-300 rounded-md h-32"
-          value={formEmails.corps}
-          onChange={(e) =>
-            setFormEmails({ ...formEmails, corps: e.target.value })
-          }
-        />
+      <ReactMde
+        value={formEmails.corps}
+        onChange={(value) => setFormEmails({ ...formEmails, corps: value })}
+        selectedTab={selectedTabEmail}
+        onTabChange={setSelectedTabEmail}
+        generateMarkdownPreview={(markdown) =>
+          Promise.resolve(converter.makeHtml(markdown))
+        }
+      />
       </div>
       <button
         type="submit"
@@ -1300,14 +1425,15 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                 />
               </div>
               <div className="w-full">
-                <textarea
-                  placeholder="Notes (optional)"
-                  className="p-3 border border-gray-300 rounded-md w-full h-32"
-                  value={formTaches.notes}
-                  onChange={(e) =>
-                    setFormTaches({ ...formTaches, notes: e.target.value })
-                  }
-                />
+              <ReactMde
+                value={formTaches.notes}
+                onChange={(value) => setFormTaches({ ...formTaches, notes: value })}
+                selectedTab={selectedTabTaches}
+                onTabChange={setSelectedTabTaches}
+                generateMarkdownPreview={(markdown) =>
+                  Promise.resolve(converter.makeHtml(markdown))
+                }
+              />
               </div>
             </div>
 
