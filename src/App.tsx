@@ -71,10 +71,23 @@ interface Email {
 
 
 
-
-
-
 function App() {
+
+// --- New authentication state added at the top ---
+const [isAuthenticated, setIsAuthenticated] = useState(false);
+const [passwordInput, setPasswordInput] = useState("");
+
+// --- New function to handle the authentication submission ---
+const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  // Adjust the environment variable name as necessary.
+  const expectedPassword = process.env.REACT_APP_PASSWORD_KEY;
+  if (passwordInput === expectedPassword) {
+    setIsAuthenticated(true);
+  } else {
+    alert("Incorrect password. Please try again.");
+  }
+};  
 // Add a new activeTab state option
   const [activeTab, setActiveTab] = useState<
     'entreprises' | 'prospects' | 'historique_appels' | 'historique_meetings' | 'taches' | 'emails' | 'smart_query'
@@ -356,6 +369,31 @@ function App() {
     if (error) alert(`Deletion error in ${table}: ${error.message}`);
     else refreshData();
   };
+
+// --- Conditionally render the password prompt when not authenticated ---
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold mb-4">Access Restricted</h1>
+        <form onSubmit={handleAuthSubmit} className="flex flex-col space-y-4">
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            className="p-3 border border-gray-300 rounded-md"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="flex space-x-4 mb-6">
