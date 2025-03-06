@@ -1240,69 +1240,22 @@ const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
             }}
             className="mb-8 p-6 bg-white rounded-lg shadow w-full"
           >
-            <div className="flex flex-col space-y-4 mb-6 w-full">
-              <div className="w-full">
-                <select
-                  className="p-3 border border-gray-300 rounded-md w-full"
-                  value={formTaches.prospect_id}
-                  onChange={(e) =>
-                    setFormTaches({ ...formTaches, prospect_id: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">Select Prospect</option>
-                  {prospects.map((p) => (
-                    <option key={p.prospect_id} value={p.prospect_id}>
-                      {p.nom} {p.prenom}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="w-full">
-                <input
-                  type="text"
-                  placeholder="Libellé"
-                  className="p-3 border border-gray-300 rounded-md w-full"
-                  value={formTaches.libelle}
-                  onChange={(e) =>
-                    setFormTaches({ ...formTaches, libelle: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="w-full">
-                <input
-                  type="text"
-                  placeholder="Status"
-                  className="p-3 border border-gray-300 rounded-md w-full"
-                  value={formTaches.status}
-                  onChange={(e) =>
-                    setFormTaches({ ...formTaches, status: e.target.value })
-                  }
-                />
-              </div>
-              <div className="w-full">
-                <input
-                  type="datetime-local"
-                  placeholder="Date Objectif"
-                  className="p-3 border border-gray-300 rounded-md w-full"
-                  value={formTaches.date_objectif}
-                  onChange={(e) =>
-                    setFormTaches({ ...formTaches, date_objectif: e.target.value })
-                  }
-                />
-              </div>
-              <div className="w-full">
-                <textarea
-                  placeholder="Notes (optional)"
-                  className="p-3 border border-gray-300 rounded-md w-full h-32"
-                  value={formTaches.notes}
-                  onChange={(e) =>
-                    setFormTaches({ ...formTaches, notes: e.target.value })
-                  }
-                />
-              </div>
+
+            <div className="w-full">
+              <select
+                className="p-3 border border-gray-300 rounded-md w-full"
+                value={formTaches.status}
+                onChange={(e) =>
+                  setFormTaches({ ...formTaches, status: e.target.value })
+                }
+              >
+                <option value="">Sélectionner le statut</option>
+                <option value="A faire">A faire</option>
+                <option value="En cours">En cours</option>
+                <option value="Terminée">Terminée</option>
+              </select>
             </div>
+
             <div className="text-left">
               <button
                 type="submit"
